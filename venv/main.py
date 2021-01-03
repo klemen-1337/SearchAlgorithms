@@ -1,6 +1,6 @@
 import os
 from typing import List, Tuple
-
+from copy import deepcopy
 
 # Prebere vsebino datoteke ter vrne P,N, seznam z vrsticami matrike.
 def read_file(file_name: str) -> Tuple[int, int, List[List[str]]]:
@@ -20,84 +20,57 @@ def read_input():
         print("Please input integer only")
 
     return {
-        "1": dfs(input_matrix)
+        "1": dfs(input_matrix, end_matrix)
     }.get(input_algorithm, "Please choose a valid algorithm")
-
-# Pregleda koliko mest (vertikalno) je še prostih, da lahko nanje položimo kocke
-# vrne seznam, ki za vsak stolpec pove število prostih.
-def check_status(matrix: List[List[str]]) -> List[int]:
-
-    status = [0] * len(matrix)
-
-    for line in matrix:
-        for ind, spot in enumerate(line):
-            if(not spot[1].isalpha()):
-                status[ind] += 1
-
-    return status
 
 # Vsebuje sam premik elementa iz p-te pozicije,
 # na r-to pozicijo. Če je kock več, da na vrh sklada.
-# Vrne zapis v obliki PRESTAVI p,r
 # Preveri tudi, če je premik veljaven, drugače ga ne opravi.
-def move(p: int, r: int):
+def move(matrix, p: int, r: int):
 
-    status = check_status(input_matrix)
+    matrix = deepcopy(matrix)
 
-    # Vzameš element iz mesta p-1
-    char_line = input_matrix[status[p-1]]
-    char = char_line[p-1]
-    char_line.remove(char)
-    char_line.insert(p-1, "' '")
-
-    # Postaviš element na mesto r-1
-    char_line2 = input_matrix[status[r-1]-1]
-    char2 = char_line2[r-1]
-    char_line2.remove(char2)
-    char_line2.insert(r-1, char)
-
-    return input_matrix
-
-
-# Pregleda če je željen premik veljaven, vrne true/false
-def validate_move(p: int, r: int) -> bool:
-
-    status = check_status(input_matrix)
-    try:
-        # Drugače je p prazen / r je poln
-        if(status[p-1] != len(status) and status[r-1] > 0
-                # prestavljamo na mestu
-                and p != r
-                and p != 0
-                and status[r-1] != 0):
-
-            return True
-
-    except:
+    if p == r \
+            or len([x[r-1] for x in matrix if x[r-1] != "' '"]) == N \
+            or len([x[p-1] for x in matrix if x[p-1] != "' '"]) == 0:
         return False
 
-    return False
+    foo = None
 
+    for y in range(len(matrix)):
+        if matrix[y][p-1] != "' '":
+            foo = matrix[y][p-1]
+            matrix[y][p-1] = "' '"
+            break
+    for y in reversed(range(0, len(matrix))):
+        if matrix[y][r-1] == "' '":
+            matrix[y][r-1] = foo
+            break
 
-def dfs(input_matrix):
+    return matrix
 
-    if(input_matrix == end_matrix):
-        return
-    else:
-        for i in range(1, P+1):
-            for j in range (1, P+1):
-                if(validate_move(i, j)):
-                    a = move(i, j)
-                    if a not in states:
-                        states.append(a)
-                        dfs(a)
-
-# P == Št odstavnih položajev (št. stolpcev v matriki)
-# N == Št možnik škatel na posameznam odstavnem položaju (št. vrstic v matriki)
-P, N, input_matrix = read_file("Data/primer1_zacetna.txt")
-_, _, end_matrix = read_file("Data/primer1_koncna.txt")
 
 states = []
+commands = []
+
+def dfs(input_matrix, end_matrix):
+    global states
+    states.append(input_matrix)
+
+    if(input_matrix == end_matrix):
+        for line in input_matrix:
+            print(line)
+        return True
+
+    for i in range(1, P+1):
+        for j in range (1, P+1):
+            a = move(input_matrix, i, j)
+            if a:
+                if a not in states:
+                    if dfs(a, end_matrix):
+                        commands.append("PRESTAVI " + str(i) + " " + str(j))
+                        return True
+    return False
 
 def main():
 
@@ -110,9 +83,16 @@ def main():
     print("1. DFS \t 2. BFS")
 
     read_input()
+    print()
 
-    for line in input_matrix:
-        print(line)
+    print("Zaporedje ukazov, ki pripelje do podane rešitve: ")
+    print(commands)
+
+# P == Št odstavnih položajev (št. stolpcev v matriki)
+# N == Št možnik škatel na posameznam odstavnem položaju (št. vrstic v matriki)
+P, N, input_matrix = read_file("Data/primer1_zacetna.txt")
+_, _, end_matrix = read_file("Data/primer1_koncna.txt")
+
 
 if __name__ == '__main__':
     main()
