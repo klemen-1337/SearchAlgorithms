@@ -1,6 +1,6 @@
 import os
 from typing import List, Tuple
-from SearchAlgorithms import Bfs, Dfs
+
 
 # Prebere vsebino datoteke ter vrne P,N, seznam z vrsticami matrike.
 def read_file(file_name: str) -> Tuple[int, int, List[List[str]]]:
@@ -15,16 +15,13 @@ def read_file(file_name: str) -> Tuple[int, int, List[List[str]]]:
 def read_input():
 
     try:
-        input_algorithm = int(input())
+        input_algorithm = input()
     except ValueError:
         print("Please input integer only")
 
-    switcher={
-            1:Dfs.main(),
-            2:Bfs.main()
-            }
-
-    return switcher.get(input_algorithm, "Please choose a valid algorithm")
+    return {
+        "1": dfs(input_matrix)
+    }.get(input_algorithm, "Please choose a valid algorithm")
 
 # Pregleda koliko mest (vertikalno) je še prostih, da lahko nanje položimo kocke
 # vrne seznam, ki za vsak stolpec pove število prostih.
@@ -43,56 +40,79 @@ def check_status(matrix: List[List[str]]) -> List[int]:
 # na r-to pozicijo. Če je kock več, da na vrh sklada.
 # Vrne zapis v obliki PRESTAVI p,r
 # Preveri tudi, če je premik veljaven, drugače ga ne opravi.
-def move(p: int, r: int) -> str:
+def move(p: int, r: int):
 
     status = check_status(input_matrix)
 
-    if(validate_move(p, r)):
+    # Vzameš element iz mesta p-1
+    char_line = input_matrix[status[p-1]]
+    char = char_line[p-1]
+    char_line.remove(char)
+    char_line.insert(p-1, "' '")
 
-        # Vzameš element iz mesta p-1
-        char_line = input_matrix[status[p-1]]
-        char = char_line[p-1]
-        char_line.remove(char)
-        char_line.insert(p-1, "' '")
+    # Postaviš element na mesto r-1
+    char_line2 = input_matrix[status[r-1]-1]
+    char2 = char_line2[r-1]
+    char_line2.remove(char2)
+    char_line2.insert(r-1, char)
 
-        # Postaviš element na mesto r-1
-        char_line2 = input_matrix[status[r-1]-1]
-        char2 = char_line2[r-1]
-        char_line2.remove(char2)
-        char_line2.insert(r-1, char)
+    return input_matrix
 
 
 # Pregleda če je željen premik veljaven, vrne true/false
 def validate_move(p: int, r: int) -> bool:
 
     status = check_status(input_matrix)
+    try:
+        # Drugače je p prazen / r je poln
+        if(status[p-1] != len(status) and status[r-1] > 0
+                # prestavljamo na mestu
+                and p != r
+                and p != 0
+                and status[r-1] != 0):
 
-    if(status[p-1] > 0 and status[r-1] > 0 and p != r):
-        return True
+            return True
+
+    except:
+        return False
 
     return False
+
+
+def dfs(input_matrix):
+
+    if(input_matrix == end_matrix):
+        return
+    else:
+        for i in range(1, P+1):
+            for j in range (1, P+1):
+                if(validate_move(i, j)):
+                    a = move(i, j)
+                    if a not in states:
+                        states.append(a)
+                        dfs(a)
 
 # P == Št odstavnih položajev (št. stolpcev v matriki)
 # N == Št možnik škatel na posameznam odstavnem položaju (št. vrstic v matriki)
 P, N, input_matrix = read_file("Data/primer1_zacetna.txt")
+_, _, end_matrix = read_file("Data/primer1_koncna.txt")
+
+states = []
 
 def main():
 
-    print("Please choose an algoririthm to run: \n(press a number)\n")
-    print("1. DFS \t 2. BFS\n")
-    print(read_input())
-
+    print("Your input matrix is :")
     for line in input_matrix:
         print(line)
-
-    move(1, 2)
     print()
 
+    print("Please choose an algoririthm to run: \n(press a number)\n")
+    print("1. DFS \t 2. BFS")
+
+    read_input()
 
     for line in input_matrix:
         print(line)
-
-
 
 if __name__ == '__main__':
     main()
