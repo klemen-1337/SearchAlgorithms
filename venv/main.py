@@ -20,7 +20,7 @@ def read_input():
         print("Please input integer only")
 
     return {
-        "1": dfs(input_matrix, end_matrix)
+        "1": dfs(input_matrix, end_matrix, 0)
     }.get(input_algorithm, "Please choose a valid algorithm")
 
 # Vsebuje sam premik elementa iz p-te pozicije,
@@ -53,8 +53,10 @@ def move(matrix, p: int, r: int):
 states = []
 commands = []
 
-def dfs(input_matrix, end_matrix):
+def dfs(input_matrix, end_matrix, depth):
+
     global states
+
     states.append(input_matrix)
 
     if(input_matrix == end_matrix):
@@ -62,18 +64,22 @@ def dfs(input_matrix, end_matrix):
             print(line)
         return True
 
+    if(depth == 40):
+        return False
+
     for i in range(1, P+1):
         for j in range (1, P+1):
             a = move(input_matrix, i, j)
             if a:
                 if a not in states:
-                    if dfs(a, end_matrix):
+                    if dfs(a, end_matrix, depth+1):
                         commands.append("PRESTAVI " + str(i) + " " + str(j))
                         return True
+
     return False
 
-def main():
 
+def main():
     print("Your input matrix is :")
     for line in input_matrix:
         print(line)
@@ -86,12 +92,13 @@ def main():
     print()
 
     print("Zaporedje ukazov, ki pripelje do podane rešitve: ")
+    commands.reverse()
     print(commands)
 
 # P == Št odstavnih položajev (št. stolpcev v matriki)
 # N == Št možnik škatel na posameznam odstavnem položaju (št. vrstic v matriki)
-P, N, input_matrix = read_file("Data/primer1_zacetna.txt")
-_, _, end_matrix = read_file("Data/primer1_koncna.txt")
+P, N, input_matrix = read_file("Data/primer3_zacetna.txt")
+_, _, end_matrix = read_file("Data/primer3_koncna.txt")
 
 
 if __name__ == '__main__':
