@@ -1,7 +1,6 @@
 import os
 from typing import List, Tuple
 from copy import deepcopy
-from collections import defaultdict
 
 # Prebere vsebino datoteke ter vrne P,N, seznam z vrsticami matrike.
 def read_file(file_name: str) -> Tuple[int, int, List[List[str]]]:
@@ -81,14 +80,41 @@ def dfs(input_matrix, end_matrix, depth):
 
     return False
 
+def backtrace(dict, input_matrix, end_matrix):
+
+    path = [(end_matrix, None, None)]
+
+    while path[-1][0] != input_matrix:
+        item = dict.get(str(path[-1][0]))
+        path.append(item)
+
+    path.reverse()
+    print()
+    for line, i, j in path:
+        for ele in line:
+            print(ele)
+        if(i and j):
+            commands.append("PREMIK: " + str(i) + " " + str(j))
+        print()
+
+    commands.reverse()
+    return path
 
 def bfs(input_matrix, end_matrix):
-    parent = defaultdict(lambda : [])
+
+    # Slovar otrok: starš
+    dict = {}
+
+    # Statistika
+    levels = 1
+    nodes = 0
+    nodes_generated = 1
+
+    # Naslednji nivo
     next_level = []
 
-    # V vrsto dodamo začetni node
+    # V vrsto trenurnega nivoja dodamo začetni node
     current_level = [input_matrix]
-
     # Nastavimo začetni node na obiskan
     states.append(input_matrix)
 
@@ -96,22 +122,34 @@ def bfs(input_matrix, end_matrix):
     while True:
 
         current_node = current_level.pop(0)
-        states.append(current_node)
+        nodes += 1
 
         # Ustavitveni pogoj
         if current_node == end_matrix:
             for line in current_node:
                 print(line)
-            return True
+            # Pri BFS je enako, kot sama dolžina traca, saj je rešitev vedno optimalna.
+            print("\nŠtevilo obiskanih nivojev: ", levels)
+            print("Število premikov za rešitev: ", levels - 1)
+            print("Število obdelanih vozlišč: ", nodes)
+            print("Število generiranih vozlišč: ", nodes_generated)
+            return backtrace(dict, input_matrix, current_node)
 
         for i in range(1, P+1):
             for j in range(1, P+1):
                 a = move(current_node, i, j)
                 if a:
+                    nodes_generated += 1
                     if a not in states:
+
+                        states.append(a)
+                        child = str(a)
+                        dict[child] = (current_node, i, j)
+
                         next_level.append(a)
 
         if (len(current_level) == 0):
+            levels+=1
             current_level = next_level.copy()
             next_level = []
 
@@ -135,8 +173,8 @@ def main():
 
 # P == Št odstavnih položajev (št. stolpcev v matriki)
 # N == Št možnik škatel na posameznam odstavnem položaju (št. vrstic v matriki)
-P, N, input_matrix = read_file("Data/primer1_zacetna.txt")
-_, _, end_matrix = read_file("Data/primer1_koncna.txt")
+P, N, input_matrix = read_file("Data/primer2_zacetna.txt")
+_, _, end_matrix = read_file("Data/primer2_koncna.txt")
 
 
 if __name__ == '__main__':
