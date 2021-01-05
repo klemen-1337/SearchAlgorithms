@@ -1,6 +1,7 @@
 import os
 from typing import List, Tuple
 from copy import deepcopy
+from collections import defaultdict
 
 # Prebere vsebino datoteke ter vrne P,N, seznam z vrsticami matrike.
 def read_file(file_name: str) -> Tuple[int, int, List[List[str]]]:
@@ -20,7 +21,8 @@ def read_input():
         print("Please input integer only")
 
     return {
-        "1": dfs(input_matrix, end_matrix, 0)
+        #"1": dfs(input_matrix, end_matrix, 0),
+        "2" : bfs(input_matrix, end_matrix)
     }.get(input_algorithm, "Please choose a valid algorithm")
 
 # Vsebuje sam premik elementa iz p-te pozicije,
@@ -64,6 +66,7 @@ def dfs(input_matrix, end_matrix, depth):
             print(line)
         return True
 
+    # Če spreminjamo globino, lahko z zmanjšanjem najde rešitev kasneje, vendar je bolj optimalna.
     if(depth == 40):
         return False
 
@@ -78,6 +81,41 @@ def dfs(input_matrix, end_matrix, depth):
 
     return False
 
+
+def bfs(input_matrix, end_matrix):
+    parent = defaultdict(lambda : [])
+    next_level = []
+
+    # V vrsto dodamo začetni node
+    current_level = [input_matrix]
+
+    # Nastavimo začetni node na obiskan
+    states.append(input_matrix)
+
+    # Iteriramo dokler ne obiščemo vseh, ali pa najdemo rezultat
+    while True:
+
+        current_node = current_level.pop(0)
+        states.append(current_node)
+
+        # Ustavitveni pogoj
+        if current_node == end_matrix:
+            for line in current_node:
+                print(line)
+            return True
+
+        for i in range(1, P+1):
+            for j in range(1, P+1):
+                a = move(current_node, i, j)
+                if a:
+                    if a not in states:
+                        next_level.append(a)
+
+        if (len(current_level) == 0):
+            current_level = next_level.copy()
+            next_level = []
+
+    return True
 
 def main():
     print("Your input matrix is :")
@@ -97,8 +135,8 @@ def main():
 
 # P == Št odstavnih položajev (št. stolpcev v matriki)
 # N == Št možnik škatel na posameznam odstavnem položaju (št. vrstic v matriki)
-P, N, input_matrix = read_file("Data/primer3_zacetna.txt")
-_, _, end_matrix = read_file("Data/primer3_koncna.txt")
+P, N, input_matrix = read_file("Data/primer1_zacetna.txt")
+_, _, end_matrix = read_file("Data/primer1_koncna.txt")
 
 
 if __name__ == '__main__':
