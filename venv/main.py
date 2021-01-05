@@ -2,6 +2,11 @@ import os
 from typing import List, Tuple
 from copy import deepcopy
 
+# Statistika
+levels = 1
+nodes = 1
+nodes_generated = 1
+
 # Prebere vsebino datoteke ter vrne P,N, seznam z vrsticami matrike.
 def read_file(file_name: str) -> Tuple[int, int, List[List[str]]]:
 
@@ -20,8 +25,8 @@ def read_input():
         print("Please input integer only")
 
     return {
-        #"1": dfs(input_matrix, end_matrix, 0),
-        "2" : bfs(input_matrix, end_matrix)
+        "1": dfs(input_matrix, end_matrix, 0),
+        #"2" : bfs(input_matrix, end_matrix)
     }.get(input_algorithm, "Please choose a valid algorithm")
 
 # Vsebuje sam premik elementa iz p-te pozicije,
@@ -57,9 +62,13 @@ commands = []
 def dfs(input_matrix, end_matrix, depth):
 
     global states
+    global nodes
+    global levels
+    global nodes_generated
 
     states.append(input_matrix)
 
+    # Ustavitveni pogoj, z ispisom
     if(input_matrix == end_matrix):
         for line in input_matrix:
             print(line)
@@ -71,11 +80,16 @@ def dfs(input_matrix, end_matrix, depth):
 
     for i in range(1, P+1):
         for j in range (1, P+1):
+            nodes_generated += 1
+            nodes += 1
             a = move(input_matrix, i, j)
             if a:
                 if a not in states:
                     if dfs(a, end_matrix, depth+1):
                         commands.append("PRESTAVI " + str(i) + " " + str(j))
+                        print()
+                        for line in a:
+                            print(line)
                         return True
 
     return False
@@ -105,11 +119,6 @@ def bfs(input_matrix, end_matrix):
     # Slovar otrok: starš
     dict = {}
 
-    # Statistika
-    levels = 1
-    nodes = 0
-    nodes_generated = 1
-
     # Naslednji nivo
     next_level = []
 
@@ -121,28 +130,29 @@ def bfs(input_matrix, end_matrix):
     # Iteriramo dokler ne obiščemo vseh, ali pa najdemo rezultat
     while True:
 
+        global nodes
+        global levels
+        global nodes_generated
+
         current_node = current_level.pop(0)
         nodes += 1
 
-        # Ustavitveni pogoj
+        # Ustavitveni pogoj z ispisom
         if current_node == end_matrix:
             for line in current_node:
                 print(line)
             # Pri BFS je enako, kot sama dolžina traca, saj je rešitev vedno optimalna.
-            print("\nŠtevilo obiskanih nivojev: ", levels)
-            print("Število premikov za rešitev: ", levels - 1)
-            print("Število obdelanih vozlišč: ", nodes)
-            print("Število generiranih vozlišč: ", nodes_generated)
             return backtrace(dict, input_matrix, current_node)
 
+        # BFS
         for i in range(1, P+1):
             for j in range(1, P+1):
                 a = move(current_node, i, j)
                 if a:
                     nodes_generated += 1
                     if a not in states:
-
                         states.append(a)
+                        # Slovar child: parent
                         child = str(a)
                         dict[child] = (current_node, i, j)
 
@@ -156,6 +166,7 @@ def bfs(input_matrix, end_matrix):
     return True
 
 def main():
+
     print("Your input matrix is :")
     for line in input_matrix:
         print(line)
@@ -169,6 +180,13 @@ def main():
 
     print("Zaporedje ukazov, ki pripelje do podane rešitve: ")
     commands.reverse()
+
+    print("\nŠtevilo obiskanih nivojev: ", levels)
+    print("Število premikov za rešitev: ", len(commands))
+    print("Število obdelanih vozlišč: ", nodes)
+    print("Število generiranih vozlišč: ", nodes_generated)
+    print()
+
     print(commands)
 
 # P == Št odstavnih položajev (št. stolpcev v matriki)
